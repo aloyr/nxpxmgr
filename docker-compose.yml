@@ -1,0 +1,38 @@
+version: '3'
+services:
+  app:
+    image: 'jc21/nginx-proxy-manager:latest'
+    ports:
+      - '80:80'
+      - '81:81'
+      - '443:443'
+    environment:
+      DB_MYSQL_HOST: "db"
+      DB_MYSQL_PORT: 3306
+      DB_MYSQL_USER: "nginxpxmgr"
+      DB_MYSQL_PASSWORD__FILE: /run/secrets/DB_PWD
+      DB_MYSQL_NAME: "nginxpxmgr"
+    volumes:
+      - ./data:/data
+      - ./letsencrypt:/etc/letsencrypt
+    secrets:
+      - DB_PWD
+  db:
+    image: 'jc21/mariadb-aria:latest'
+    environment:
+      MYSQL_ROOT_PASSWORD__FILE: /run/secrets/DB_ROOT_PWD
+      MYSQL_DATABASE: 'nginxpxmgr'
+      MYSQL_USER: 'nginxpxmgr'
+      MYSQL_PASSWORD__FILE: /run/secrets/DB_PWD
+    volumes:
+      - ./mysql:/var/lib/mysql
+    secrets:
+      - DB_PWD
+      - DB_ROOT_PWD
+
+secrets:
+  DB_PWD:
+    file: .secrets/db_pwd.txt
+  DB_ROOT_PWD:
+    file: .secrets/db_root_pwd.txt
+
